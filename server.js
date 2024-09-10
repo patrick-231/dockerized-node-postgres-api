@@ -7,16 +7,15 @@ app.use(express.json())
 
 const port = process.env.PORT || 3000;    
 
-app.get("/", async (req, res) => {
-    try {
-     const data =   await pool.query ("SELECT * FROM schools");
-            res.send(data.rows);
-        
-    } catch (err) {
-        console.error(err.message);
-    }
-  
-});
+app.get("/create", async (req, res) =>{
+try {
+    await pool.query("CREATE TABLE schools (id SERIAL PRIMARY KEY, name VARCHAR(50), email VARCHAR(50))");
+    res.status(201).send("Table created successfully");
+    
+} catch (error) {
+    console.log(error.message);
+}
+})
 
 app.post("/", async (req, res) => {
     const { name, email } = req.body;
@@ -29,15 +28,28 @@ app.post("/", async (req, res) => {
     }
 })
 
-app.get("/create", async (req, res) =>{
-try {
-    await pool.query("CREATE TABLE schools (id SERIAL PRIMARY KEY, name VARCHAR(50), email VARCHAR(50))");
-    res.status(201).send("Table created successfully");
-    
-} catch (error) {
-    console.log(error.message);
-}
+app.get("/", async (req, res) => {
+    try {
+     const data =   await pool.query ("SELECT * FROM schools");
+            res.send(data.rows);
+        
+    } catch (err) {
+        console.error(err.message);
+    }
+  
+});
+
+app.put("/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, email } = req.body;
+        await pool.query("UPDATE schools SET name = $1, email = $2 WHERE id = $3", [name, email, id]);
+        res.send("Entry updated successfully");
+    } catch (error) {
+        console.log(error.message);
+    }
 })
+
 app.delete("/:id", async (req, res) =>{
     try {
         const { id } = req.params;
